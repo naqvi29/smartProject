@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ["smart.thevinexperts.com","localhost"]
 # Application definition
 
 INSTALLED_APPS = [
+    'scheduler', # scheduler*
     'home',
     'scrapper',
     'telegramBot',

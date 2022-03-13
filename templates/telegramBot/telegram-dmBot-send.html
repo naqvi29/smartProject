@@ -48,6 +48,8 @@
   padding: 80px;
   border: 1px solid #888;
   width: 100%; /* Could be more or less, depending on screen size */
+  max-height: 100%;
+overflow-y: auto;
 }
 
 /* The Close Button */
@@ -91,7 +93,7 @@
 </style>
 {% endblock %}
 {% block heading %} 
-Telegram DM BOT send {{category.capitalize}}  <button id="groupBtn" class="ml-4 btn btn-outline-dark">Manage Groups</button>
+Telegram DM BOT send {{category.capitalize}}  <button id="groupBtn" class="ml-4 btn btn-outline-dark">Manage Groups</button><a href="/telegramBot/schedule-messages"><button class="ml-2 btn btn-outline-dark">Schedule Messages</button></a>
 {% endblock %}
 {% block content %}
 {% if sent == 'true' %}
@@ -207,6 +209,7 @@ Telegram DM BOT send {{category.capitalize}}  <button id="groupBtn" class="ml-4 
 {% endblock %}
 {% block scripts %} 
 
+
 <script>
     // Get the modal
 var modal1 = document.getElementById("groupModal");
@@ -305,7 +308,7 @@ window.onclick = function(event) {
 
       
     }
-  </script>
+  </>
   <!-- datetime picker  -->
   <script>
   </script>

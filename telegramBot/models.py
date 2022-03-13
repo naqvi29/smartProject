@@ -41,5 +41,6 @@ class Schedule_Messages(models.Model):
     delay = models.CharField(max_length=100)
     date = models.CharField(max_length=100)
     time = models.CharField(max_length=100)
+    status = models.CharField(max_length=100)
     def __str__(self):
         return self.message

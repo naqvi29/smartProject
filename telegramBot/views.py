@@ -19,10 +19,97 @@ from telethon.errors.rpcerrorlist import *
 from telethon import functions
 import sys
 from datetime import datetime
+import time
+import os
 
 PROFILE_PIC_FOLDER='static/images/profile-pics/' 
 TELEGRAM_SESSIONS_FOLDER= settings.BASE_DIR
 # Create your views here.
+
+def Job1():
+    print('Tick! The time is: %s' % datetime.now())
+    data = Schedule_Messages.objects.all().filter(status="pending")
+    for i in data:
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d")
+        tm_string = now.strftime("%H:%M")
+        print("time-now = ",tm_string)
+        if i.date == dt_string and i.time==tm_string:
+            print("chal gaya xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+            print(i.message)
+
+            group_name = i.group
+            account_id = i.account_id
+            chat = i.message
+            sleep_time_first = i.delay
+
+            print(group_name, chat, account_id, sleep_time_first, datetime)
+            TelegramAccount = Telegram_Accounts.objects.all().filter(id=account_id)
+            phone = TelegramAccount[0].number
+            api_id = TelegramAccount[0].hash_id
+            api_hash = TelegramAccount[0].hash_key
+            sleep_time = 2
+            sleep_time_first = int(sleep_time_first)
+            print(phone,api_hash,api_id)
+            try:
+                client = telegram_client(phone, api_id, api_hash)
+                print('Account login successfully')
+            except PhoneCodeInvalidError:
+                sys.exit('You enter the wrong code.')
+            client(functions.channels.JoinChannelRequest(channel=group_name))
+            print('Bot send message after '+str(sleep_time_first)+' seconds.')
+            time.sleep(sleep_time_first)
+            while True:
+                try:
+                    client.send_message(group_name, str(chat))
+                    print('Question send successfully. Bot sleep for '+str(sleep_time)+ ' seconds.')
+                    client.disconnect()
+                    t = Schedule_Messages.objects.get(id=i.id)
+                    t.status = "completed"
+                    t.save()
+                    return HttpResponse('Chat send successfully')         
+                    account = Telegram_Accounts.objects.all().filter(id=id)
+                    user_data = User.objects.all().filter(id=request.session.get('userid'))
+                    groups = Telegram_Groups.objects.all().filter(userid=request.session.get('userid'),account_id=id)
+                    questions = Telegram_Questions.objects.all().filter(userid=request.session.get('userid'),account_id=id)
+                    context= {"username":request.session.get('username'),"user_data":user_data,"account":account, "category":"question","groups":groups,"questions":questions,"sent":"true","group_name":group_name}
+                    return render(request,"telegramBot/telegram-bot-send.html",context)
+                    column += 1
+                    time.sleep(sleep_time)
+                except IndexError:         
+                    client.disconnect()
+                    print("All questions completed in "+group_name+' group.\n')
+                    print()
+                    return HttpResponse("All questions completed in "+group_name+' group.\n')
+                    url = "/telegramBot/telegram-dmBot-send/"+id
+                    return HttpResponseRedirect(url)
+                except FloodError:         
+                    client.disconnect()
+                    print('Due to many messages in group bot stops (Flood error).')
+                    return HttpResponse('Due to many messages in group bot stops (Flood error).')
+                    sys.exit()
+                    url = "/telegramBot/telegram-dmBot-send/"+id
+                    return HttpResponseRedirect(url)
+                except FloodWaitError:         
+                    client.disconnect()
+                    print('Due to many messages in group bot stops (Flood error).')
+                    sys.exit()
+                    url = "/telegramBot/telegram-dmBot-send/"+id
+                    return HttpResponseRedirect(url)
+                except Exception as e:         
+                    client.disconnect()
+                    print(e)
+                    return HttpResponse(e)
+                    sys.exit()
+                    url = "/telegramBot/telegram-dmBot-send/"+id
+                    return HttpResponseRedirect(url)
+
+                except Exception as e:         
+                    client.disconnect()
+                    print(e)
+                    url = "/telegramBot/telegram-dmBot-send/"+id
+                    return HttpResponseRedirect(url)
+
 
 def user_dashboard(request):
     if request.session['is_login'] is True:
@@ -136,7 +223,7 @@ def send_chat(request,id):
             time = datetime2.rpartition('T')[2]
             print(date)
             print(time)
-            data = Schedule_Messages(userid=request.session.get('userid'), message=chat, account_id=account_id, group=group_name, delay = sleep_time_first, date=date, time=time)
+            data = Schedule_Messages(userid=request.session.get('userid'), message=chat, account_id=account_id, group=group_name, delay = sleep_time_first, date=date, time=time,status="pending")
             data.save()
             return HttpResponse("Scheduled")
 
@@ -437,6 +524,25 @@ def coming_soon(request):
     user_data = User.objects.all().filter(id=request.session.get('userid'))
     context = {"user_data":user_data}
     return render(request,"telegramBot/coming-soon.html",context)
+
+def schedule_messages(request):
+    if request.session['is_login'] is True:
+        user_data = User.objects.all().filter(id=request.session.get('userid'))
+        messages = Schedule_Messages.objects.all().filter(userid = request.session.get('userid'))
+        context = {"user_Data":user_data,"messages":messages}
+        return render(request,'telegramBot/schedule-messages.html',context)
+
+
+    else:
+        return HttpResponse("please log in first")
+
+def delete_schedule_messages(request,id):
+    if request.session['is_login'] is True:
+        Schedule_Messages.objects.filter(id=id).delete()
+        return redirect(schedule_messages)
+
+    else:
+        return HttpResponse("please log in first")
 
 
 

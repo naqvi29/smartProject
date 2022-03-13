@@ -21,4 +21,6 @@ urlpatterns = [
     path('delete-telegram-questions/<int:id>', views.delete_telegram_questions, name='delete_telegram_questions'),
     path('delete-telegram-answers/<int:id>', views.delete_telegram_answers, name='delete_telegram_answers'),
     path('coming-soon', views.coming_soon, name='coming_soon'),
+    path('schedule-messages', views.schedule_messages, name='schedule_messages'),
+    path('delete-schedule-messages/<int:id>', views.delete_schedule_messages, name='delete_schedule_messages'),
 ]
