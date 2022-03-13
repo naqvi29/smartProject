@@ -32,3 +32,14 @@ class Telegram_Answers(models.Model):
     answers= models.TextField()
     def __str__(self):
         return self.answers
+
+class Schedule_Messages(models.Model):
+    userid= models.CharField(max_length=100)
+    message = models.TextField()
+    account_id= models.CharField(max_length=100)
+    group = models.CharField(max_length=100)
+    delay = models.CharField(max_length=100)
+    date = models.CharField(max_length=100)
+    time = models.CharField(max_length=100)
+    def __str__(self):
+        return self.message

@@ -1,3 +1,4 @@
+from email import message
 from django.shortcuts import render, redirect
 from httplib2 import Http
 from home.models import User
@@ -9,6 +10,7 @@ from telegramBot.models import Telegram_Accounts
 from telegramBot.models import Telegram_Groups
 from telegramBot.models import Telegram_Questions
 from telegramBot.models import Telegram_Answers
+from telegramBot.models import Schedule_Messages
 from django.conf import settings
 import time
 import asyncio
@@ -16,6 +18,7 @@ from telethon.sync import TelegramClient
 from telethon.errors.rpcerrorlist import *
 from telethon import functions
 import sys
+from datetime import datetime
 
 PROFILE_PIC_FOLDER='static/images/profile-pics/' 
 TELEGRAM_SESSIONS_FOLDER= settings.BASE_DIR
@@ -100,7 +103,8 @@ def telegram_dmBot_send(request,id, sent):
         user_data = User.objects.all().filter(id=request.session.get('userid'))
         groups = Telegram_Groups.objects.all().filter(userid=request.session.get('userid'),account_id=id)
         questions = Telegram_Questions.objects.all().filter(userid=request.session.get('userid'),account_id=id)
-        context= {"username":request.session.get('username'),"user_data":user_data,"account":account,"groups":groups,"questions":questions,"sent":sent}
+        accounts = Telegram_Accounts.objects.all().filter(userid=request.session.get('userid'))
+        context= {"username":request.session.get('username'),"user_data":user_data,"account":account,"groups":groups,"questions":questions,"sent":sent,"accounts":accounts}
         return render(request,"telegramBot/telegram-dmBot-send.html",context)
             
             
@@ -124,13 +128,29 @@ def send_chat(request,id):
         if request.method =='POST':
             print( "post request received")
             group_name = request.POST.get("group_name")
-            chat = request.POST.get("chat")
-            sleep_time = request.POST.get("sleep_time")
-            sleep_time_first = request.POST.get("sleep_time_first")
+            account_id = int(request.POST.get("account_id"))
+            chat = request.POST.get("message")
+            sleep_time_first = request.POST.get("delay")
+            datetime2 = str(request.POST.get("datetime"))
+            date = datetime2.rpartition('T')[0]
+            time = datetime2.rpartition('T')[2]
+            print(date)
+            print(time)
+            data = Schedule_Messages(userid=request.session.get('userid'), message=chat, account_id=account_id, group=group_name, delay = sleep_time_first, date=date, time=time)
+            data.save()
+            return HttpResponse("Scheduled")
+
+            # now = datetime.now()
+            # dt_string = now.strftime("%Y-%m-%d")
+            # dt_string2 = now.strftime("%H:%M")
+            # print("now =", now)
+            # print("dt_string =", dt_string)
+            # print("tm_string =", dt_string2)
 
 
-            account_id = id
-            print(group_name, chat, account_id)
+
+            # account_id = id
+            print(group_name, chat, account_id, sleep_time_first, datetime)
             TelegramAccount = Telegram_Accounts.objects.all().filter(id=account_id)
             phone = TelegramAccount[0].number
             api_id = TelegramAccount[0].hash_id

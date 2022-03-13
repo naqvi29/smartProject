@@ -148,7 +148,6 @@ Telegram DM BOT send {{category.capitalize}}  <button id="groupBtn" class="ml-4 
 </div>
 <!-- group modal end -->
 
-<!-- new work  -->
 
 <div class="table-responsive">   
   <!-- <h2>Tabular form</h2> -->
@@ -156,10 +155,12 @@ Telegram DM BOT send {{category.capitalize}}  <button id="groupBtn" class="ml-4 
       <thead>
           <tr>
             <th scope="col">#</th>
-            <th scope="col">Chat</th>
+            <th scope="col">Message</th>
+            <th scope="col">Account</th>
             <th scope="col">Group</th>
-            <th scope="col">Sleep Time</th>
-            <th scope="col">Sleep Time First</th>
+            <th scope="col">Delay (sec)</th>
+            <th scope="col">DateTime</th>
+            <th scope="col">Status</th>
             <th scope="col">Send</th>
           </tr>
         </thead>
@@ -167,21 +168,40 @@ Telegram DM BOT send {{category.capitalize}}  <button id="groupBtn" class="ml-4 
           <tr>
             <th scope="row">1</th>
             <td><input type="text" class="form-control" name="chat" id="chat" aria-describedby="emailHelp"></td>
+            <td><select id="account" type="text" class="form-control" name="account" aria-describedby="emailHelp" placeholder="Select account" required>
+              {% for i in accounts %}
+              <option value="{{i.id}}">{{i.number}}</option>
+              {% endfor %}
+          </select></td>
             <td><select id="group_name" type="text" class="form-control" name="group_name" aria-describedby="emailHelp" placeholder="Enter Group Name" required>
               {% for i in groups %}
               <option value="{{i.group_name}}">{{i.group_name}}</option>
               {% endfor %}
           </select></td>
-          <td style="width: 15%;"><input type="number" class="form-control w-50" name="sleep_time" id="sleep_time" aria-describedby="emailHelp"></td>
-          <td style="width: 15%;"><input type="number" class="form-control w-50" name="sleep_time_first" id="sleep_time_first" aria-describedby="emailHelp"></td>
-            <td><button class="btn btn-dark" onclick="send()">Send</button></td>
+          <!-- <td style="width: 15%;"><input type="number" class="form-control w-50" name="sleep_time_first" id="sleep_time_first" aria-describedby="emailHelp"></td> -->
+          <td style="width: 15%;"><select id="delay" type="number" class="form-control w-50" name="sleep_time_first" aria-describedby="emailHelp"  required>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="1000">1000</option>
+            <option value="5000">5000</option>
+            <option value="10000">10000</option>
+            <option value="20000">20000</option>
+        </select></td>
+        <td><input type="datetime-local" id="birthdaytime" class="form-control" name="datetime"></td>
+        <td><button style="display: none;" id="response-btn" class=""></button></td>
+            <td><button id="response" class="btn btn-dark" onclick="send()">Send</button></td>
           </tr>
         </tbody>
   </table>
 </div>
-<div id="response" class="my-2" style="display: none;"> 
+<!-- <div id="response" class="my-2" style="display: none;"> 
   <button id="response-btn" class=""></button>
-</div>
+</div> -->
 {% endblock %}
 {% block scripts %} 
 
@@ -216,32 +236,35 @@ window.onclick = function(event) {
   <script>
     function send(){
       
-      respone_div = document.getElementById("response");
+      // respone_div = document.getElementById("response");
       response_btn = document.getElementById("response-btn");
       response_btn.className = "btn btn-lg btn-secondary";
-      response_btn.innerText = "Sending ...";
-      respone_div.style.display = "block";
+      response_btn.innerText = "Running";
+      response_btn.style.display = "block";
 
-      chat = document.getElementById("chat").value;
+      message = document.getElementById("chat").value;
       var group_name = document.getElementById("group_name");
       var group_name_value = group_name.value;
-      sleep_time = document.getElementById("sleep_time").value;
-      sleep_time_first = document.getElementById("sleep_time_first").value;
-      console.log(chat);
+      var account_id = document.getElementById("account")
+      var account_id_value = account_id.value;
+      delay = document.getElementById("delay").value;
+      datetime = document.getElementById("birthdaytime").value;
+      console.log(message);
       console.log(group_name_value);
-      console.log(sleep_time);
-      console.log(sleep_time_first);
-
-
-      // ajax
+      console.log(delay);
+      console.log(account_id_value);
+      console.log(datetime);
+      if (message && datetime && group_name_value && delay && account_id_value ) {
+        console.log("all recieved");
+        // ajax
       $.ajax({
           url: "/telegramBot/send-chat/{{account.0.id}}",
           type: "POST",
-          data: { group_name: group_name_value,chat:chat,sleep_time:sleep_time,sleep_time_first:sleep_time_first, csrfmiddlewaretoken: "{{ csrf_token }}" },
+          data: { group_name: group_name_value,account_id:account_id_value,message:message,delay:delay, datetime:datetime ,csrfmiddlewaretoken: "{{ csrf_token }}" },
           success: function (response) {
             respone_div = document.getElementById("response");
             response_btn = document.getElementById("response-btn");
-            if( response !== 'Chat send successfully' ) {
+            if( response !== 'Scheduled' ) {
                     error = response;
                   response_btn.className = "btn btn-lg btn-danger";
                   response_btn.innerText = error;
@@ -266,7 +289,23 @@ window.onclick = function(event) {
         }).done(function (response) {
           console, log(response);
         });
+        
+      }
+      else{
+        console.log("something missing");
+          
+        response_btn = document.getElementById("response-btn");
+        response_btn.className = "btn btn-lg btn-danger";
+        response_btn.innerText = "Something Missing";
+        response_btn.style.display = "block";
+      }
+
+
+      
     }
+  </script>
+  <!-- datetime picker  -->
+  <script>
   </script>
 {% endblock %}
 
